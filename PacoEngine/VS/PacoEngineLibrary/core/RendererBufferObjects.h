@@ -470,3 +470,71 @@ namespace FBO_FUNCTIONS
 		RBO_FUNCTIONS::Delete(p_fbo.rbo);
 	}
 }
+
+struct SamplerObject
+{
+	GLuint id;
+};
+
+namespace SAMPLER_OBJECT_FUNCTIONS
+{
+	// Create a sampler object
+	static void Create(SamplerObject& p_sampler)
+	{
+		glCreateSamplers(1, &p_sampler.id);
+	}
+
+	// Set filtering parameters
+	static void SetFiltering(SamplerObject& p_sampler, GLenum p_min_filter, GLenum p_mag_filter)
+	{
+		glSamplerParameteri(p_sampler.id, GL_TEXTURE_MIN_FILTER, p_min_filter);
+		glSamplerParameteri(p_sampler.id, GL_TEXTURE_MAG_FILTER, p_mag_filter);
+	}
+
+	// Set wrap parameters
+	static void SetWrapMode(SamplerObject& p_sampler, GLenum p_wrap_s, GLenum p_wrap_t, GLenum p_wrap_r)
+	{
+		glSamplerParameteri(p_sampler.id, GL_TEXTURE_WRAP_S, p_wrap_s);
+		glSamplerParameteri(p_sampler.id, GL_TEXTURE_WRAP_T, p_wrap_t);
+		glSamplerParameteri(p_sampler.id, GL_TEXTURE_WRAP_R, p_wrap_r);
+	}
+
+	// Set border color for the sampler
+	static void SetBorderColor(SamplerObject& p_sampler, const GLfloat p_border_color[4])
+	{
+		glSamplerParameterfv(p_sampler.id, GL_TEXTURE_BORDER_COLOR, p_border_color);
+	}
+
+	// Set anisotropic filtering
+	static void SetAnisotropy(SamplerObject& p_sampler, GLfloat p_max_anisotropy)
+	{
+		GLfloat maxSupportedAnisotropy;
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxSupportedAnisotropy);
+
+		if (p_max_anisotropy > maxSupportedAnisotropy)
+		{
+			p_max_anisotropy = maxSupportedAnisotropy;
+		}
+
+		glSamplerParameterf(p_sampler.id, GL_TEXTURE_MAX_ANISOTROPY, p_max_anisotropy);
+	}
+
+	// Bind the sampler to a texture unit
+	static void Bind(SamplerObject& p_sampler, GLuint p_texture_unit)
+	{
+		glBindSampler(p_texture_unit, p_sampler.id);
+	}
+
+	// Unbind the sampler from a texture unit
+	static void Unbind(GLuint p_texture_unit)
+	{
+		glBindSampler(p_texture_unit, 0);
+	}
+
+	// Delete the sampler object
+	static void Delete(SamplerObject& p_sampler)
+	{
+		glDeleteSamplers(1, &p_sampler.id);
+		p_sampler.id = 0;
+	}
+}
