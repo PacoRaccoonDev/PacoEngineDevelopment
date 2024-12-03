@@ -7,7 +7,6 @@
 struct Texture
 {
     GLuint id;
-    GLuint64 handle; // Handle for bindless textures
     int width, height;
 };
 
@@ -18,76 +17,38 @@ namespace TextureFunctions
         glCreateTextures(GL_TEXTURE_2D, 1, &p_texture.id);
     }
 
-    static void BindTextureUnit(Texture& p_texture, GLenum p_texture_unit) {
-
-        if (p_texture_unit < GL_TEXTURE0 || p_texture_unit > GL_TEXTURE31) {
-            std::cerr << "Invalid texture unit: " << p_texture_unit << std::endl;
-            return;  // or handle the error
-        }
-
-        if (p_texture.id == 0) {
-            std::cerr << "Invalid texture ID" << std::endl;
-            return;  // or handle the error
-        }
+    static void BindTextureUnit(Texture& p_texture, GLuint p_texture_unit)
+    {
 
         glBindTextureUnit(p_texture_unit, p_texture.id);
     }
 
-    static void MakeBindless(Texture& p_texture)
-    {
-        p_texture.handle = glGetTextureHandleARB(p_texture.id);
-        glMakeTextureHandleResidentARB(p_texture.handle);
-
-        //if (glMakeTextureHandleResidentARB) // Ensure the function is available
-        //{
-
-        //}
-        //else
-        //{
-        //    std::cerr << "Bindless texture extension is not supported on this system!" << std::endl;
-        //    p_texture.handle = 0;
-        //}
-    }
-
-    static void MakeNonResident(Texture& p_texture)
-    {
-        if (glMakeTextureHandleNonResidentARB && p_texture.handle)
-        {
-            glMakeTextureHandleNonResidentARB(p_texture.handle);
-            p_texture.handle = 0; // Invalidate handle
-        }
-    }
-
     static void Delete(Texture& p_texture)
     {
-        MakeNonResident(p_texture); // Ensure the handle is non-resident before deleting
         glDeleteTextures(1, &p_texture.id);
     }
 
-    static GLenum GetTextureFormat(GLenum& p_internal_format) {
-        switch (p_internal_format) {
+    static GLenum GetTextureFormat(GLenum& p_internal_format)
+    {
+        switch (p_internal_format)
+        {
         case GL_RGBA8:
             return GL_RGBA;
-            break;
         case GL_RGB8:
             return GL_RGB;
-            break;
         case GL_R8:
             return GL_RED;
-            break;
         case GL_DEPTH_COMPONENT:
             return GL_DEPTH_COMPONENT;
-            break;
         default:
             fprintf(stderr, "Unsupported internal format: %u\n", p_internal_format);
             return 0; // Invalid format
-            break;
         }
     }
 
-    static void GenerateTextureFromFile(const char* p_path, Texture& p_texture, bool p_nearest_filtering = true, bool p_make_bindless = false)
+    static void GenerateTextureFromFile(const char* p_path, Texture& p_texture, bool p_nearest_filtering = true)
     {
-        // TO DO: Implement MipMapLevels
+        stbi_set_flip_vertically_on_load(true);
 
         auto p_filter_type = GL_NEAREST;
 
@@ -100,7 +61,8 @@ namespace TextureFunctions
         int p_channels;
         unsigned char* p_img = stbi_load(p_path, &p_texture.width, &p_texture.height, &p_channels, 0);
 
-        if (p_img == NULL) {
+        if (p_img == NULL)
+        {
             std::cerr << "Could not load the image" << std::endl;
             return;
         }
@@ -118,16 +80,10 @@ namespace TextureFunctions
 
         // Free image data
         stbi_image_free(p_img);
-
-        if (p_make_bindless)
-        {
-            MakeBindless(p_texture);
-        }
     }
 
     // PixelStorageMode: 1 = for fonts | 4 = default
-
-    static void GenerateTextureFromBitmap(Texture& p_texture, unsigned char& p_bitmap, int p_pixel_storage_mode, GLenum p_format, GLenum p_filter_type = GL_LINEAR, bool p_make_bindless = false)
+    static void GenerateTextureFromBitmap(Texture& p_texture, unsigned char& p_bitmap, int p_pixel_storage_mode, GLenum p_format, GLenum p_filter_type = GL_LINEAR)
     {
         GLenum p_data_format = GL_UNSIGNED_BYTE;
 
@@ -155,11 +111,6 @@ namespace TextureFunctions
         if (p_pixel_storage_mode != 4)
         {
             glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-        }
-
-        if (p_make_bindless)
-        {
-            MakeBindless(p_texture);
         }
     }
 }

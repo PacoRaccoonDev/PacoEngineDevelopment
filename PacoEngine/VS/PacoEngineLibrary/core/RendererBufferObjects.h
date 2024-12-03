@@ -35,7 +35,7 @@ struct VBO
 	GLuint id;
 };
 
-namespace VBO_FUNCTIONS
+namespace VBOFunctions
 {
 	static void Create(VBO& p_vbo) {
 		glCreateBuffers(1, &p_vbo.id);
@@ -121,7 +121,7 @@ struct EBO
 	GLuint id;
 };
 
-namespace EBO_FUNCTIONS{
+namespace EBOFunctions{
 
 	static void Create(EBO& p_ebo) {
 		glCreateBuffers(1, &p_ebo.id); // DSA: Create the EBO
@@ -182,7 +182,7 @@ struct VAO
 	GLuint id;
 };
 
-namespace VAO_FUNCTIONS
+namespace VAOFunctions
 {
 	static void Create(VAO& p_vao)
 	{
@@ -213,8 +213,7 @@ namespace VAO_FUNCTIONS
 		glVertexArrayAttribFormat(p_vao.id, p_attrib_index, p_number_of_fields, p_attribute_type, GL_FALSE, p_field_offset);
 	}
 
-	template<typename TVertexType>
-	static void SetAllAttributeFormatsByVertexAttributes(VAO& p_vao, const std::vector<VertexAttribute>& p_attributes )
+	static void SetAllAttributeFormatsByVertexAttributes(VAO& p_vao, std::vector<VertexAttribute> p_attributes )
 	{
 		for (const VertexAttribute& attribute : p_attributes) {
 
@@ -249,7 +248,7 @@ struct UBO
 	GLuint binding_point;
 };
 
-namespace UBO_FUNCTIONS {
+namespace UBOFunctions {
 
 	static void Create(UBO& p_ubo)
 	{
@@ -347,7 +346,7 @@ struct IBO
 	GLuint id;
 };
 
-namespace IBO_FUNCTIONS
+namespace IBOFunctions
 {
 	
 	static void Create(IBO& p_ibo) {
@@ -399,7 +398,7 @@ struct RBO
 	GLuint id;
 };
 
-namespace RBO_FUNCTIONS
+namespace RBOFunctions
 {
 
 	void Create(RBO& p_rbo,int p_width, int p_height)
@@ -426,7 +425,7 @@ struct FBO
 	RBO rbo;
 };
 
-namespace FBO_FUNCTIONS 
+namespace FBOFunctions 
 {
 
 	void Create(FBO& p_fbo,int p_width, int p_height)
@@ -443,8 +442,8 @@ namespace FBO_FUNCTIONS
 		glNamedFramebufferTexture(p_fbo.id, GL_COLOR_ATTACHMENT0, p_fbo.texture.id, 0);
 
 		// Create and attach the renderbuffer object (RBO)
-		RBO_FUNCTIONS::Create(p_fbo.rbo,p_width, p_height);
-		RBO_FUNCTIONS::Attach(p_fbo.rbo, p_fbo.id);
+		RBOFunctions::Create(p_fbo.rbo,p_width, p_height);
+		RBOFunctions::Attach(p_fbo.rbo, p_fbo.id);
 
 		// Check if the framebuffer is complete
 		if (glCheckNamedFramebufferStatus(p_fbo.id, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -467,7 +466,7 @@ namespace FBO_FUNCTIONS
 	{
 		glDeleteFramebuffers(1, &p_fbo.id);
 		TextureFunctions::Delete(p_fbo.texture);
-		RBO_FUNCTIONS::Delete(p_fbo.rbo);
+		RBOFunctions::Delete(p_fbo.rbo);
 	}
 }
 
@@ -476,7 +475,7 @@ struct SamplerObject
 	GLuint id;
 };
 
-namespace SAMPLER_OBJECT_FUNCTIONS
+namespace SamplerObjectFunctions
 {
 	// Create a sampler object
 	static void Create(SamplerObject& p_sampler)

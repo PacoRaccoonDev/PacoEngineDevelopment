@@ -84,7 +84,7 @@ struct InputManager
 };
 
 
-namespace INPUT_FUNCTIONS
+namespace InputFunctions
 {
     static unsigned int KeyToIndex(SDL_Keycode p_key) {
         switch (p_key) {
@@ -572,11 +572,11 @@ namespace INPUT_FUNCTIONS
         
 
         for (auto& btn : p_input_manager.mouse.buttons) {
-            INPUT_FUNCTIONS::ButtonUpdate(btn, p_input_manager);
+            InputFunctions::ButtonUpdate(btn, p_input_manager);
         }
 
         for (auto& btn : p_input_manager.keyboard.keys) {
-            INPUT_FUNCTIONS::ButtonUpdate(btn, p_input_manager);
+            InputFunctions::ButtonUpdate(btn, p_input_manager);
         }
 
         for (size_t i = 0; i < 4; i++)
@@ -585,7 +585,7 @@ namespace INPUT_FUNCTIONS
             {
                 for (auto& btn : p_input_manager.controllers[i].buttons)
                 {
-                    INPUT_FUNCTIONS::ButtonUpdate(btn, p_input_manager);
+                    InputFunctions::ButtonUpdate(btn, p_input_manager);
                 }
             }
 
@@ -636,12 +636,12 @@ namespace INPUT_FUNCTIONS
 
                 if (is_down)
                 {
-                    INPUT_FUNCTIONS::ButtonPress(p_input_manager.mouse.buttons[internal__array_index], p_input_manager);
+                    InputFunctions::ButtonPress(p_input_manager.mouse.buttons[internal__array_index], p_input_manager);
                     //std::cout << p_input_manager.mouse.position_x << " | " << p_input_manager.mouse.position_y << '\n';
                 }
                 else
                 {
-                    INPUT_FUNCTIONS::ButtonRelease(p_input_manager.mouse.buttons[internal__array_index], p_input_manager);
+                    InputFunctions::ButtonRelease(p_input_manager.mouse.buttons[internal__array_index], p_input_manager);
                     //std::cout << p_input_manager.mouse.motion_x << " | " << p_input_manager.mouse.motion_y << '\n';
                 }
 
@@ -678,11 +678,11 @@ namespace INPUT_FUNCTIONS
 
                 if (is_down)
                 {
-                    INPUT_FUNCTIONS::ButtonPress(p_input_manager.keyboard.keys[internal__array_index], p_input_manager);
+                    InputFunctions::ButtonPress(p_input_manager.keyboard.keys[internal__array_index], p_input_manager);
                 }
                 else
                 {
-                    INPUT_FUNCTIONS::ButtonRelease(p_input_manager.keyboard.keys[internal__array_index], p_input_manager);
+                    InputFunctions::ButtonRelease(p_input_manager.keyboard.keys[internal__array_index], p_input_manager);
                 }
             }
             else if (controller_input)
@@ -694,11 +694,11 @@ namespace INPUT_FUNCTIONS
 
                 if (is_down)
                 {
-                    INPUT_FUNCTIONS::ButtonPress(p_input_manager.controllers[controller_id].buttons[internal__array_index], p_input_manager);
+                    InputFunctions::ButtonPress(p_input_manager.controllers[controller_id].buttons[internal__array_index], p_input_manager);
                 }
                 else
                 {
-                    INPUT_FUNCTIONS::ButtonRelease(p_input_manager.controllers[controller_id].buttons[internal__array_index], p_input_manager);
+                    InputFunctions::ButtonRelease(p_input_manager.controllers[controller_id].buttons[internal__array_index], p_input_manager);
                 }
             }else if(axis_motion)
             {

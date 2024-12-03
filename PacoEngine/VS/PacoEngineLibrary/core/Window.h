@@ -35,7 +35,7 @@ struct Window
     WindowInfo info;
 };
 
-namespace WINDOW_FUNCTIONS
+namespace WindowFunctions
 {
     static bool CreateWindow(Window& p_window)
     {
@@ -104,9 +104,9 @@ namespace WINDOW_FUNCTIONS
             bool window_creation;
             bool glad_loaded_proc;
 
-            sdl_init = WINDOW_FUNCTIONS::INIT::CORE::InitializeSDL(p_initFlags);
-            window_creation = WINDOW_FUNCTIONS::CreateWindow(p_window);
-            glad_loaded_proc = WINDOW_FUNCTIONS::INIT::CORE::InitializeGladGL();
+            sdl_init = WindowFunctions::INIT::CORE::InitializeSDL(p_initFlags);
+            window_creation = WindowFunctions::CreateWindow(p_window);
+            glad_loaded_proc = WindowFunctions::INIT::CORE::InitializeGladGL();
 
             if(!sdl_init || !window_creation || !glad_loaded_proc)
             {

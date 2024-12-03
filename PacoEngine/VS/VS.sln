@@ -7,6 +7,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PacoEngineLibrary", "PacoEn
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestApp", "TestApp\TestApp.vcxproj", "{409988CD-5CB0-432C-B367-28FE2AC20E76}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{159F3D6E-F33A-460A-9311-5F99998C5349}"
+	ProjectSection(SolutionItems) = preProject
+		Shader\shader_src\testshader.frag = Shader\shader_src\testshader.frag
+		Shader\shader_src\testshader.vert = Shader\shader_src\testshader.vert
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

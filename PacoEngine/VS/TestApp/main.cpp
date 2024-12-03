@@ -15,7 +15,15 @@ struct BaseVertex
     glm::vec3 position;
     glm::vec2 uv;
     glm::vec4 vertex_color;
-    uint64_t  texture_handle;
+
+    static const std::vector<VertexAttribute> attributes;
+};
+
+// Define the static attribute descriptions
+const std::vector<VertexAttribute> BaseVertex::attributes = {
+    {0, 3, GL_FLOAT, GL_FALSE, offsetof(BaseVertex, position)},       // Position
+    {1, 2, GL_FLOAT, GL_FALSE, offsetof(BaseVertex, uv)},            // UV
+    {2, 4, GL_FLOAT, GL_FALSE, offsetof(BaseVertex, vertex_color)},  // Color
 };
 
 int main(int argc, char* argv[])
@@ -24,10 +32,42 @@ int main(int argc, char* argv[])
     main_window.info = WindowInfo{ "PacoEngine" };
     main_window.rect = WindowRect{ 50 , 50 , 800 , 800 };
 
-    if (!WINDOW_FUNCTIONS::INIT::InitializeRenderContext(main_window))
+    if (!WindowFunctions::INIT::InitializeRenderContext(main_window))
     {
         return -1;
     }
+
+    // Define a quad
+    BaseVertex vertices[] = {
+        {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
+        {{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
+        {{ 0.5f,  0.5f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
+        {{-0.5f,  0.5f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} }
+    };
+
+    GLuint indices[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    // Create VAO, VBO, EBO
+    VAO vao;
+    VBO vbo;
+    EBO ebo;
+
+    VAOFunctions::Create(vao);
+    VBOFunctions::Create(vbo);
+    EBOFunctions::Create(ebo);
+
+    VAOFunctions::Bind(vao);
+    VBOFunctions::PreallocateBufferWithData(vbo, 4, vertices, true);
+    EBOFunctions::PreallocateBufferWithData(ebo, 6, indices, true);
+    VAOFunctions::SetAllAttributeFormatsByVertexAttributes(vao, vertices[0].attributes);
+
+    // Link buffers to VAO
+    VAOFunctions::LinkBuffers(vao, sizeof(BaseVertex), vbo, ebo);
+    VAOFunctions::Unbind();
+
 
     Material testMaterial;
 
@@ -48,22 +88,18 @@ int main(int argc, char* argv[])
     std::cout << "OpenGL Version: " << version << std::endl;
 
     Texture testTex;
+    TextureFunctions::GenerateTextureFromFile("uvt.png", testTex, true);
 
-    TextureFunctions::Create(testTex);
-    TextureFunctions::GenerateTextureFromFile("uvt.png", testTex, true, true);
 
-    Texture testTex2;
 
-    TextureFunctions::Create(testTex2);
-    TextureFunctions::GenerateTextureFromFile("uvt.png", testTex2, true, true);
+    ShaderFunctions::Use(testMaterial.shader);
 
-    glUseProgram(testMaterial.shader.id);
-    GLint p = glGetUniformLocation(testMaterial.shader.id, "a");
-    GLint o = glGetUniformLocation(testMaterial.shader.id, "b");
-    GLint l = glGetUniformLocation(testMaterial.shader.id, "c");
+    printerr(glGetError());
 
-    glUniformHandleui64ARB(p, testTex2.handle);
-    glUniformHandleui64ARB(o, testTex.handle);
+    TextureFunctions::BindTextureUnit(testTex, 0);
+    //glBindTextureUnit(0, testTex.id);
+    //glUniform1i(glGetUniformLocation(testMaterial.shader.id, "a"), 0);
+
     printerr(glGetError());
 
     InputManager main_input_manager;
@@ -77,16 +113,16 @@ int main(int argc, char* argv[])
         {
             SDL_Event e;
 
-            INPUT_FUNCTIONS::UpdateInputStatesPrePoll(main_input_manager);
+            InputFunctions::UpdateInputStatesPrePoll(main_input_manager);
 
             while (SDL_PollEvent(&e))
             {
-                INPUT_FUNCTIONS::HandleControllerEvents(e, main_input_manager);
-                INPUT_FUNCTIONS::UpdateInputEvent(e, main_input_manager);
-                WINDOW_FUNCTIONS::UpdateWindowEvent(e, program_should_close, main_window);
+                InputFunctions::HandleControllerEvents(e, main_input_manager);
+                InputFunctions::UpdateInputEvent(e, main_input_manager);
+                WindowFunctions::UpdateWindowEvent(e, program_should_close, main_window);
             }
 
-            INPUT_FUNCTIONS::UpdateInputStatesPostPoll(main_input_manager);
+            InputFunctions::UpdateInputStatesPostPoll(main_input_manager);
 
 
         }
@@ -94,10 +130,13 @@ int main(int argc, char* argv[])
         glClearColor(0.0, 0.0, 0.4, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        WINDOW_FUNCTIONS::Swap(main_window);
+        glBindVertexArray(vao.id);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        WindowFunctions::Swap(main_window);
     }
 
-    WINDOW_FUNCTIONS::Delete(main_window);
+    WindowFunctions::Delete(main_window);
 
     return 0;
 }
