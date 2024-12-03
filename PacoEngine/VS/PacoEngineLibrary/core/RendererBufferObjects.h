@@ -491,11 +491,11 @@ namespace SamplerObjectFunctions
 	}
 
 	// Set wrap parameters
-	static void SetWrapMode(SamplerObject& p_sampler, GLenum p_wrap_s, GLenum p_wrap_t, GLenum p_wrap_r)
+	static void SetWrapMode(SamplerObject& p_sampler, GLenum p_coord_handle_type, GLenum p_wrap_type/*, GLenum p_wrap_t, GLenum p_wrap_r*/)
 	{
-		glSamplerParameteri(p_sampler.id, GL_TEXTURE_WRAP_S, p_wrap_s);
-		glSamplerParameteri(p_sampler.id, GL_TEXTURE_WRAP_T, p_wrap_t);
-		glSamplerParameteri(p_sampler.id, GL_TEXTURE_WRAP_R, p_wrap_r);
+		glSamplerParameteri(p_sampler.id, p_coord_handle_type, p_wrap_type);     // Defines the wrapping mode for the S (horizontal) coordinate.
+		//glSamplerParameteri(p_sampler.id, GL_TEXTURE_WRAP_T, p_wrap_t); // Defines the wrapping mode for the T (vertical) coordinate.
+		//glSamplerParameteri(p_sampler.id, GL_TEXTURE_WRAP_R, p_wrap_r); // Defines the wrapping mode for the R (depth) coordinate in the case of 3D texture
 	}
 
 	// Set border color for the sampler

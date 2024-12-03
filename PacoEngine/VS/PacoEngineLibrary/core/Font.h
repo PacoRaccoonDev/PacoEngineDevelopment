@@ -5,7 +5,7 @@
 #include "Texture.h"
 #include <stb/stb_truetype.h>
 
-struct TtfFontAtlas
+struct TTFFontAtlas
 {
 public:
     int atlas_width = 512;
@@ -16,14 +16,14 @@ public:
     stbtt_bakedchar* baked_chars;
 
     // Allocates memory on the heap CLEAN IT WITH DELETE
-    TtfFontAtlas(float p_pixel_height, int p_atlas_width, int p_atlas_height, int p_number_of_glyphs)
+    TTFFontAtlas(float p_pixel_height, int p_atlas_width, int p_atlas_height, int p_number_of_glyphs)
         : atlas_width(p_atlas_width), atlas_height(p_atlas_height), number_of_glyphs(p_number_of_glyphs), pixel_height(p_pixel_height)
     {
         baked_chars = new stbtt_bakedchar[number_of_glyphs];
     }
 };
 
-struct TtfFontQuad
+struct TTFFontQuad
 {
     int character = 'A';
     float pos_x = 0;
@@ -33,17 +33,17 @@ struct TtfFontQuad
 
 namespace FontAtlasFunctions
 {
-    static void Delete(TtfFontAtlas& p_atlas_to_free)
+    static void Delete(TTFFontAtlas& p_atlas_to_free)
     {
         delete[] p_atlas_to_free.baked_chars;
     }
 
-    static void InitializeFontQuadFromAtlas(TtfFontAtlas& p_font_atlas, TtfFontQuad& p_font_quad, float& p_x, float& p_y)
+    static void InitializeFontQuadFromAtlas(TTFFontAtlas& p_font_atlas, TTFFontQuad& p_font_quad, float& p_x, float& p_y)
     {
         stbtt_GetBakedQuad(p_font_atlas.baked_chars, p_font_atlas.atlas_width, p_font_atlas.atlas_height, p_font_quad.character - 32, &p_x, &p_y, &p_font_quad.quad, 1);
     }
 
-    static bool LoadTtfFontAtlasFromFile(const char* p_ttf_file_path, TtfFontAtlas& p_font_atlas, Texture& p_font_texture, GLenum p_filter_type = GL_LINEAR)
+    static bool LoadTTFFontAtlasFromFile(const char* p_ttf_file_path, TTFFontAtlas& p_font_atlas, Texture& p_font_texture, GLenum p_filter_type = GL_LINEAR)
     {
         stbtt_fontinfo p_font;
 

@@ -5,6 +5,8 @@
 struct Material
 {
 	Shader shader;
+
+	std::vector<Texture> textures;
 };
 
 

@@ -85,6 +85,8 @@ namespace TextureFunctions
     // PixelStorageMode: 1 = for fonts | 4 = default
     static void GenerateTextureFromBitmap(Texture& p_texture, unsigned char& p_bitmap, int p_pixel_storage_mode, GLenum p_format, GLenum p_filter_type = GL_LINEAR)
     {
+        //stbi_set_flip_vertically_on_load(true);
+
         GLenum p_data_format = GL_UNSIGNED_BYTE;
 
         if (p_format == GL_DEPTH_COMPONENT)

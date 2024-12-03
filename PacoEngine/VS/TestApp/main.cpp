@@ -9,6 +9,7 @@
 #include <PacoEngineLibrary/core/RendererBufferObjects.h>
 #include <PacoEngineLibrary/core/Shader.h>
 #include <PacoEngineLibrary/core/Material.h>
+#include <PacoEngineLibrary/core/Font.h>
 
 struct BaseVertex
 {
@@ -21,7 +22,7 @@ struct BaseVertex
 
 // Define the static attribute descriptions
 const std::vector<VertexAttribute> BaseVertex::attributes = {
-    {0, 3, GL_FLOAT, GL_FALSE, offsetof(BaseVertex, position)},       // Position
+    {0, 3, GL_FLOAT, GL_FALSE, offsetof(BaseVertex, position)},      // Position
     {1, 2, GL_FLOAT, GL_FALSE, offsetof(BaseVertex, uv)},            // UV
     {2, 4, GL_FLOAT, GL_FALSE, offsetof(BaseVertex, vertex_color)},  // Color
 };
@@ -37,12 +38,33 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    Texture fontAtlasTexture;
+    TTFFontAtlas fontAtlas(128.0f, 1024, 1024, 96);
+
+    FontAtlasFunctions::LoadTTFFontAtlasFromFile("arial.ttf", fontAtlas, fontAtlasTexture);
+
+    float textOffsetX = 0;
+    float textOffsetY = 0;
+
+    TTFFontQuad fontQuad;
+    fontQuad.character = '@';
+
+    FontAtlasFunctions::InitializeFontQuadFromAtlas(fontAtlas, fontQuad, textOffsetX, textOffsetY);
+
     // Define a quad
+    //BaseVertex vertices[] = {
+    //    {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
+    //    {{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
+    //    {{ 0.5f,  0.5f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
+    //    {{-0.5f,  0.5f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} }
+    //};
+
+    //// Define a quad
     BaseVertex vertices[] = {
-        {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
-        {{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
-        {{ 0.5f,  0.5f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
-        {{-0.5f,  0.5f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} }
+        {{-0.5f, -0.5f, 0.0f}, {fontQuad.quad.s0, fontQuad.quad.t1}, {1.0f, 0.0f, 0.0f, 1.0f} },
+        {{ 0.5f, -0.5f, 0.0f}, {fontQuad.quad.s1, fontQuad.quad.t1}, {0.0f, 1.0f, 0.0f, 1.0f} },
+        {{ 0.5f,  0.5f, 0.0f}, {fontQuad.quad.s1, fontQuad.quad.t0}, {0.0f, 0.0f, 1.0f, 1.0f} },
+        {{-0.5f,  0.5f, 0.0f}, {fontQuad.quad.s0, fontQuad.quad.t0}, {1.0f, 1.0f, 0.0f, 1.0f} }
     };
 
     GLuint indices[] = {
@@ -76,6 +98,8 @@ int main(int argc, char* argv[])
         const char* fontFragmentShaderSourcePath = "../Shader/shader_src/testshader.frag";
         ShaderFunctions::Compile(testMaterial.shader, fontVertexShaderSourcePath, fontFragmentShaderSourcePath);
         ShaderFunctions::Use(testMaterial.shader);
+        testMaterial.textures.push_back(fontAtlasTexture);
+        //TextureFunctions::GenerateTextureFromFile("uvt.png", testMaterial.textures[0], true);
     }
 
     if (!glad_glGetTextureHandleARB || !glad_glMakeTextureHandleResidentARB) {
@@ -87,16 +111,13 @@ int main(int argc, char* argv[])
     const char* version = (const char*)glGetString(GL_VERSION);
     std::cout << "OpenGL Version: " << version << std::endl;
 
-    Texture testTex;
-    TextureFunctions::GenerateTextureFromFile("uvt.png", testTex, true);
-
 
 
     ShaderFunctions::Use(testMaterial.shader);
 
     printerr(glGetError());
 
-    TextureFunctions::BindTextureUnit(testTex, 0);
+    TextureFunctions::BindTextureUnit(testMaterial.textures[0], 0);
     //glBindTextureUnit(0, testTex.id);
     //glUniform1i(glGetUniformLocation(testMaterial.shader.id, "a"), 0);
 
@@ -137,6 +158,7 @@ int main(int argc, char* argv[])
     }
 
     WindowFunctions::Delete(main_window);
+    FontAtlasFunctions::Delete(fontAtlas);
 
     return 0;
 }
