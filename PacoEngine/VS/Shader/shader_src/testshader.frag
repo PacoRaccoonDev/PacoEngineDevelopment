@@ -10,7 +10,7 @@ layout(location = 0) out vec4 FragColor;
   
 void main()
 {    
-    
-     FragColor = texture(a, TexCoord);
+    vec4 col = vec4(1.0,1.0,1.0,texture(a, TexCoord).r);
+    FragColor = col * VertColor;
 
 }

@@ -38,34 +38,23 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    Texture fontAtlasTexture;
-    TTFFontAtlas fontAtlas(128.0f, 1024, 1024, 96);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    FontAtlasFunctions::LoadTTFFontAtlasFromFile("arial.ttf", fontAtlas, fontAtlasTexture);
+    //Texture fontAtlasTexture;
+    TTFFontAtlas font_atlas(256.0f, 2048, 2048, 96);
+    FontAtlasFunctions::LoadTTFFontAtlasFromFile("arial.ttf", font_atlas);
 
-    float textOffsetX = 0;
-    float textOffsetY = 0;
-
-    TTFFontQuad fontQuad;
-    fontQuad.character = '@';
-
-    FontAtlasFunctions::InitializeFontQuadFromAtlas(fontAtlas, fontQuad, textOffsetX, textOffsetY);
-
-    // Define a quad
-    //BaseVertex vertices[] = {
-    //    {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
-    //    {{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
-    //    {{ 0.5f,  0.5f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
-    //    {{-0.5f,  0.5f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 0.0f, 1.0f} }
-    //};
+    TTFFontQuad* q = &font_atlas.baked_quads[FontAtlasFunctions::GetQuadIndicesFromString(font_atlas,"@")[0]];
 
     //// Define a quad
     BaseVertex vertices[] = {
-        {{-0.5f, -0.5f, 0.0f}, {fontQuad.quad.s0, fontQuad.quad.t1}, {1.0f, 0.0f, 0.0f, 1.0f} },
-        {{ 0.5f, -0.5f, 0.0f}, {fontQuad.quad.s1, fontQuad.quad.t1}, {0.0f, 1.0f, 0.0f, 1.0f} },
-        {{ 0.5f,  0.5f, 0.0f}, {fontQuad.quad.s1, fontQuad.quad.t0}, {0.0f, 0.0f, 1.0f, 1.0f} },
-        {{-0.5f,  0.5f, 0.0f}, {fontQuad.quad.s0, fontQuad.quad.t0}, {1.0f, 1.0f, 0.0f, 1.0f} }
+        {{-0.5f, -0.5f, 0.0f}, {q->uv_bottom_left}, {1.0f, 0.0f, 0.0f, 1.0f} },
+        {{ 0.5f, -0.5f, 0.0f}, {q->uv_bottom_right}, {0.0f, 1.0f, 0.0f, 1.0f} },
+        {{ 0.5f,  0.5f, 0.0f}, {q->uv_top_right}, {0.0f, 0.0f, 1.0f, 1.0f} },
+        {{-0.5f,  0.5f, 0.0f}, {q->uv_top_left}, {1.0f, 1.0f, 0.0f, 1.0f} }
     };
+
 
     GLuint indices[] = {
         0, 1, 2,
@@ -84,7 +73,7 @@ int main(int argc, char* argv[])
     VAOFunctions::Bind(vao);
     VBOFunctions::PreallocateBufferWithData(vbo, 4, vertices, true);
     EBOFunctions::PreallocateBufferWithData(ebo, 6, indices, true);
-    VAOFunctions::SetAllAttributeFormatsByVertexAttributes(vao, vertices[0].attributes);
+    VAOFunctions::SetAllAttributeFormatsByVertexAttributes(vao, BaseVertex::attributes);
 
     // Link buffers to VAO
     VAOFunctions::LinkBuffers(vao, sizeof(BaseVertex), vbo, ebo);
@@ -98,7 +87,7 @@ int main(int argc, char* argv[])
         const char* fontFragmentShaderSourcePath = "../Shader/shader_src/testshader.frag";
         ShaderFunctions::Compile(testMaterial.shader, fontVertexShaderSourcePath, fontFragmentShaderSourcePath);
         ShaderFunctions::Use(testMaterial.shader);
-        testMaterial.textures.push_back(fontAtlasTexture);
+        testMaterial.textures.push_back(font_atlas.texture);
         //TextureFunctions::GenerateTextureFromFile("uvt.png", testMaterial.textures[0], true);
     }
 
@@ -118,16 +107,12 @@ int main(int argc, char* argv[])
     printerr(glGetError());
 
     TextureFunctions::BindTextureUnit(testMaterial.textures[0], 0);
-    //glBindTextureUnit(0, testTex.id);
-    //glUniform1i(glGetUniformLocation(testMaterial.shader.id, "a"), 0);
 
     printerr(glGetError());
 
     InputManager main_input_manager;
 
     bool program_should_close = false;
-
-    //INPUT_FUNCTIONS::InitializeConnectedControllers(main_input_manager);
 
     while (program_should_close == false)
     {
@@ -157,8 +142,11 @@ int main(int argc, char* argv[])
         WindowFunctions::Swap(main_window);
     }
 
+    VAOFunctions::Delete(vao);
+    VBOFunctions::Delete(vbo);
+    EBOFunctions::Delete(ebo);
+    FontAtlasFunctions::Delete(font_atlas);
     WindowFunctions::Delete(main_window);
-    FontAtlasFunctions::Delete(fontAtlas);
 
     return 0;
 }

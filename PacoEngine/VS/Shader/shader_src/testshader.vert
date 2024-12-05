@@ -12,6 +12,7 @@ layout (location = 1) out vec4 oVertColor;
 
 void main()
 {
+    oVertColor = iVertColor;
     gl_Position = vec4(iPos, 1.0);  // Set output position
     oTexCoord = iTexCoord;           // Pass through TexCoord
 }
