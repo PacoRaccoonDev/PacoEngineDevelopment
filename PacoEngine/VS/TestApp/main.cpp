@@ -38,6 +38,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    //Alpha Blending
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -88,14 +89,11 @@ int main(int argc, char* argv[])
         ShaderFunctions::Compile(testMaterial.shader, fontVertexShaderSourcePath, fontFragmentShaderSourcePath);
         ShaderFunctions::Use(testMaterial.shader);
         testMaterial.textures.push_back(font_atlas.texture);
-        //TextureFunctions::GenerateTextureFromFile("uvt.png", testMaterial.textures[0], true);
+        Texture t;
+        TextureFunctions::Create(t);
+        TextureFunctions::GenerateTextureFromFile("uvt.png", t, true);
+        testMaterial.textures.push_back(t);
     }
-
-    if (!glad_glGetTextureHandleARB || !glad_glMakeTextureHandleResidentARB) {
-        std::cerr << "Bindless textures are not supported!" << std::endl;
-        return 0;
-    }
-
 
     const char* version = (const char*)glGetString(GL_VERSION);
     std::cout << "OpenGL Version: " << version << std::endl;
