@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <glm/glm.hpp>
 #include "Texture.h"
 #include <stb/stb_truetype.h>
 
@@ -17,7 +18,6 @@ struct TTFFontQuad
     glm::vec2 uv_bottom_right;
     glm::vec2 uv_top_right;
 
-    //stbtt_aligned_quad data;
 };
 
 struct TTFFontAtlas

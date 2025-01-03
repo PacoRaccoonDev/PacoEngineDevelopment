@@ -46,15 +46,23 @@ int main(int argc, char* argv[])
     TTFFontAtlas font_atlas(256.0f, 2048, 2048, 96);
     FontAtlasFunctions::LoadTTFFontAtlasFromFile("arial.ttf", font_atlas);
 
-    TTFFontQuad* q = &font_atlas.baked_quads[FontAtlasFunctions::GetQuadIndicesFromString(font_atlas,"@")[0]];
+    TTFFontQuad* q = &font_atlas.baked_quads[FontAtlasFunctions::GetQuadIndicesFromString(font_atlas,"0")[0]];
 
     //// Define a quad
     BaseVertex vertices[] = {
-        {{-0.5f, -0.5f, 0.0f}, {q->uv_bottom_left}, {1.0f, 0.0f, 0.0f, 1.0f} },
-        {{ 0.5f, -0.5f, 0.0f}, {q->uv_bottom_right}, {0.0f, 1.0f, 0.0f, 1.0f} },
-        {{ 0.5f,  0.5f, 0.0f}, {q->uv_top_right}, {0.0f, 0.0f, 1.0f, 1.0f} },
-        {{-0.5f,  0.5f, 0.0f}, {q->uv_top_left}, {1.0f, 1.0f, 0.0f, 1.0f} }
+        {{-0.01f, -0.01f, 0.0f}, {q->uv_bottom_left}, {1.0f, 0.0f, 0.0f, 1.0f} },
+        {{ 0.01f, -0.01f, 0.0f}, {q->uv_bottom_right}, {0.0f, 1.0f, 0.0f, 1.0f} },
+        {{ 0.01f,  0.01f, 0.0f}, {q->uv_top_right}, {0.0f, 0.0f, 1.0f, 1.0f} },
+        {{-0.01f,  0.01f, 0.0f}, {q->uv_top_left}, {1.0f, 1.0f, 0.0f, 1.0f} }
     };
+
+    //// Define a quad
+    //BaseVertex vertices[] = {
+    //    {{(q->rect_top_left.x / 256.0f) * -0.5f - 0.5f, (q->rect_top_left.y / 256.0f) * 0.5f - 0.5f, 0.0f}, {q->uv_bottom_left}, {1.0f, 0.0f, 0.0f, 1.0f} },
+    //    {{(q->rect_bottom_right.x / 256.0f) * 0.5f + 0.5f, (q->rect_top_left.y / 256.0f) * 0.5f - 0.5f, 0.0f}, {q->uv_bottom_right}, {0.0f, 1.0f, 0.0f, 1.0f} },
+    //    {{ (q->rect_bottom_right.x / 256.0f) * 0.5f + 0.5f, (q->rect_bottom_right.y / 256.0f) * -0.5f + 0.5f, 0.0f}, {q->uv_top_right}, {0.0f, 0.0f, 1.0f, 1.0f} },
+    //    {{(q->rect_top_left.x / 256.0f) * -0.5f - 0.5f, (q->rect_bottom_right.y / 256.0f) * -0.5f + 0.5f, 0.0f}, {q->uv_top_left}, {1.0f, 1.0f, 0.0f, 1.0f} }
+    //};
 
 
     GLuint indices[] = {
