@@ -27,12 +27,27 @@ const std::vector<VertexAttribute> BaseVertex::attributes = {
     {2, 4, GL_FLOAT, GL_FALSE, offsetof(BaseVertex, vertex_color)},  // Color
 };
 
+struct DrawCall
+{
+    VBO vbo;
+    EBO ebo;
+    VAO vao;
+
+    Material mat;
+};
+
 int main(int argc, char* argv[])
 {
-    Window main_window;
-    main_window.info = WindowInfo{ "PacoEngine" };
-    main_window.rect = WindowRect{ 50 , 50 , 800 , 800 };
 
+    unsigned int numberOfCells = 32;
+    unsigned int pixelResolution = 16;
+
+    Window main_window;
+    main_window.info = WindowInfo{ "Paco Engine Console" };
+    main_window.rect = WindowRect{ 50 , 50 , numberOfCells * pixelResolution ,numberOfCells * pixelResolution };
+
+    float cellSize = 1.0f / numberOfCells;
+    
     if (!WindowFunctions::INIT::InitializeRenderContext(main_window))
     {
         return -1;
@@ -42,7 +57,7 @@ int main(int argc, char* argv[])
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
+    //INIT FONT
     std::string fontPath = "arial.ttf";
 
     std::ifstream file(fontPath, std::ios::binary | std::ios::ate);
@@ -68,17 +83,12 @@ int main(int argc, char* argv[])
     float fontSize = 64.0f; // Desired font size in pixels
     float scale = stbtt_ScaleForPixelHeight(&font, fontSize);
 
-    // Access a glyph by Unicode codepoint
-    int unicodeCodepoint = 0x03A6; // Unicode for 'A'
-
-    wchar_t unicodeChar = L'☺';
-
-    std::string str = "ǋ";
+    wchar_t unicodeChar = L'@';
 
     int glyphIndex = stbtt_FindGlyphIndex(&font, unicodeChar);
 
     if (glyphIndex == 0) {
-        std::cout << "Glyph not found for Unicode codepoint: " << unicodeCodepoint << std::endl;
+        std::wcout << "Glyph not found for Unicode codepoint: " << unicodeChar << std::endl;
         return 1;
     }
 
@@ -98,15 +108,6 @@ int main(int argc, char* argv[])
     int width, height, xOffset, yOffset;
     unsigned char* bitmap = stbtt_GetGlyphBitmap(&font, scale, scale, glyphIndex, &width, &height, &xOffset, &yOffset);
 
-    // Print bitmap as ASCII art (for demonstration)
-    //std::cout << "Glyph Bitmap:\n";
-    //for (int y = 0; y < height; ++y) {
-    //    for (int x = 0; x < width; ++x) {
-    //        std::cout << (bitmap[y * width + x] > 128 ? '#' : '.');
-    //    }
-    //    std::cout << '\n';
-    //}
-
     Texture tex;
     tex.width = width;
     tex.height = height;
@@ -115,18 +116,36 @@ int main(int argc, char* argv[])
     // Free the bitmap memory
     stbtt_FreeBitmap(bitmap, nullptr);
 
+    float offsetX = -1.0f + cellSize; // Horizontal offset towards the left
+    float offsetY = 1.0f - cellSize; // Vertical offset towards the top
+
     BaseVertex vertices[] = {
         // Bottom-left corner
-        {{-0.05f, -0.05f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
+        {{-cellSize + offsetX, -cellSize + offsetY, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
 
         // Bottom-right corner
-        {{ 0.05f, -0.05f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
+        {{ cellSize + offsetX, -cellSize + offsetY, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
 
         // Top-right corner
-        {{ 0.05f,  0.05f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
+        {{ cellSize + offsetX,  cellSize + offsetY, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
 
         // Top-left corner
-        {{-0.05f,  0.05f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f} }
+        {{-cellSize + offsetX,  cellSize + offsetY, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f} }
+    };
+
+
+    BaseVertex vertices2[] = {
+        // Bottom-left corner
+        {{-cellSize + offsetX + cellSize*2, -cellSize + offsetY, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
+
+        // Bottom-right corner
+        {{ cellSize + offsetX + cellSize * 2, -cellSize + offsetY, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
+
+        // Top-right corner
+        {{ cellSize + offsetX + cellSize * 2,  cellSize + offsetY, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
+
+        // Top-left corner
+        {{-cellSize + offsetX + cellSize * 2,  cellSize + offsetY, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f} }
     };
 
     //// Define a quad
@@ -161,8 +180,18 @@ int main(int argc, char* argv[])
     EBOFunctions::Create(ebo);
 
     VAOFunctions::Bind(vao);
-    VBOFunctions::PreallocateBufferWithData(vbo, 4, vertices, true);
-    EBOFunctions::PreallocateBufferWithData(ebo, 6, indices, true);
+    VBOFunctions::PreallocateBufferMemory(vbo, sizeof(BaseVertex) * 4 * numberOfCells );
+    VBOFunctions::UpdateBufferData<BaseVertex>(vbo,vertices, 4);
+    VBOFunctions::UpdateBufferData<BaseVertex>(vbo,vertices2, 4, sizeof(BaseVertex)*4);
+    EBOFunctions::PreallocateBufferMemory(ebo, 6  * sizeof(float));
+    EBOFunctions::UpdateBufferData(ebo, indices, 6);
+    for (auto& var : indices)
+    {
+        var += 4;
+    }
+    EBOFunctions::UpdateBufferData(ebo, indices, 6, sizeof(GLuint) * 6);
+    //VBOFunctions::PreallocateBufferWithData(vbo, 4 * numberOfCells, vertices, true);
+    //EBOFunctions::PreallocateBufferWithData(ebo, 6 * numberOfCells, indices, true);
     VAOFunctions::SetAllAttributeFormatsByVertexAttributes(vao, BaseVertex::attributes);
 
     // Link buffers to VAO
@@ -224,7 +253,7 @@ int main(int argc, char* argv[])
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glBindVertexArray(vao.id);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
         WindowFunctions::Swap(main_window);
     }

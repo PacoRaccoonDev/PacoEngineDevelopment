@@ -57,7 +57,7 @@ namespace VBOFunctions
 	}
 
 	template<typename TVertexType>
-	static void UpdateBufferData(VBO& p_vbo, unsigned int p_vertex_count, const void* p_data, GLintptr p_offset = 0) {
+	static void UpdateBufferData(VBO& p_vbo, const void* p_data, unsigned int p_vertex_count, GLintptr p_offset = 0) {
 
 		GLsizeiptr size = sizeof(TVertexType) * p_vertex_count;
 
@@ -150,7 +150,7 @@ namespace EBOFunctions{
 		glNamedBufferStorage(p_ebo.id, size, nullptr, flags);
 	}
 
-	static void UpdateBufferData(EBO& p_ebo, unsigned int p_index_count, const void* p_data, GLintptr p_offset = 0) {
+	static void UpdateBufferData(EBO& p_ebo,  const void* p_data ,unsigned int p_index_count,  GLintptr p_offset = 0) {
 
 		GLsizeiptr size = sizeof(unsigned int) * p_index_count;
 
