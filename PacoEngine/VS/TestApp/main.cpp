@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <SDL2/SDL.h>
 #include <glad/gl.h>
 #include <PacoEngineLibrary/paco_engine_defines.h>
@@ -42,19 +42,100 @@ int main(int argc, char* argv[])
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    //Texture fontAtlasTexture;
-    TTFFontAtlas font_atlas(256.0f, 2048, 2048, 96);
-    FontAtlasFunctions::LoadTTFFontAtlasFromFile("arial.ttf", font_atlas);
 
-    TTFFontQuad* q = &font_atlas.baked_quads[FontAtlasFunctions::GetQuadIndicesFromString(font_atlas,"0")[0]];
+    std::string fontPath = "arial.ttf";
+
+    std::ifstream file(fontPath, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open font file: " + fontPath);
+    }
+
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<unsigned char> buffer(size);
+    if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+        throw std::runtime_error("Failed to read font file: " + fontPath);
+    }
+
+    // Initialize stb_truetype
+    stbtt_fontinfo font;
+    if (!stbtt_InitFont(&font, buffer.data(), stbtt_GetFontOffsetForIndex(buffer.data(), 0))) {
+        throw std::runtime_error("Failed to initialize font.");
+    }
+
+    // Set scale for desired font size
+    float fontSize = 64.0f; // Desired font size in pixels
+    float scale = stbtt_ScaleForPixelHeight(&font, fontSize);
+
+    // Access a glyph by Unicode codepoint
+    int unicodeCodepoint = 0x03A6; // Unicode for 'A'
+
+    wchar_t unicodeChar = L'☺';
+
+    std::string str = "ǋ";
+
+    int glyphIndex = stbtt_FindGlyphIndex(&font, unicodeChar);
+
+    if (glyphIndex == 0) {
+        std::cout << "Glyph not found for Unicode codepoint: " << unicodeCodepoint << std::endl;
+        return 1;
+    }
+
+    // Get glyph metrics
+    int advanceWidth, leftSideBearing;
+    stbtt_GetGlyphHMetrics(&font, glyphIndex, &advanceWidth, &leftSideBearing);
+    std::cout << "Advance Width: " << advanceWidth * scale << " pixels\n";
+    std::cout << "Left Side Bearing: " << leftSideBearing * scale << " pixels\n";
+
+    // Get glyph bounding box
+    int x0, y0, x1, y1;
+    stbtt_GetGlyphBox(&font, glyphIndex, &x0, &y0, &x1, &y1);
+    std::cout << "Glyph Bounding Box: (" << x0 * scale << ", " << y0 * scale << ") to ("
+        << x1 * scale << ", " << y1 * scale << ")\n";
+
+    // Render the glyph to a bitmap
+    int width, height, xOffset, yOffset;
+    unsigned char* bitmap = stbtt_GetGlyphBitmap(&font, scale, scale, glyphIndex, &width, &height, &xOffset, &yOffset);
+
+    // Print bitmap as ASCII art (for demonstration)
+    //std::cout << "Glyph Bitmap:\n";
+    //for (int y = 0; y < height; ++y) {
+    //    for (int x = 0; x < width; ++x) {
+    //        std::cout << (bitmap[y * width + x] > 128 ? '#' : '.');
+    //    }
+    //    std::cout << '\n';
+    //}
+
+    Texture tex;
+    tex.width = width;
+    tex.height = height;
+    TextureFunctions::GenerateTextureFromBitmap(tex,*bitmap, 1, GL_R8, GL_LINEAR);
+
+    // Free the bitmap memory
+    stbtt_FreeBitmap(bitmap, nullptr);
+
+    BaseVertex vertices[] = {
+        // Bottom-left corner
+        {{-0.05f, -0.05f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f, 0.0f, 1.0f} },
+
+        // Bottom-right corner
+        {{ 0.05f, -0.05f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f, 0.0f, 1.0f} },
+
+        // Top-right corner
+        {{ 0.05f,  0.05f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 1.0f} },
+
+        // Top-left corner
+        {{-0.05f,  0.05f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 0.0f, 1.0f} }
+    };
 
     //// Define a quad
-    BaseVertex vertices[] = {
-        {{-0.01f, -0.01f, 0.0f}, {q->uv_bottom_left}, {1.0f, 0.0f, 0.0f, 1.0f} },
-        {{ 0.01f, -0.01f, 0.0f}, {q->uv_bottom_right}, {0.0f, 1.0f, 0.0f, 1.0f} },
-        {{ 0.01f,  0.01f, 0.0f}, {q->uv_top_right}, {0.0f, 0.0f, 1.0f, 1.0f} },
-        {{-0.01f,  0.01f, 0.0f}, {q->uv_top_left}, {1.0f, 1.0f, 0.0f, 1.0f} }
-    };
+    //BaseVertex vertices[] = {
+    //    {{-0.05f, -0.05f, 0.0f}, {q->uv_bottom_left}, {1.0f, 0.0f, 0.0f, 1.0f} },
+    //    {{ 0.05f, -0.05f, 0.0f}, {q->uv_bottom_right}, {0.0f, 1.0f, 0.0f, 1.0f} },
+    //    {{ 0.05f,  0.05f, 0.0f}, {q->uv_top_right}, {0.0f, 0.0f, 1.0f, 1.0f} },
+    //    {{-0.05f,  0.05f, 0.0f}, {q->uv_top_left}, {1.0f, 1.0f, 0.0f, 1.0f} }
+    //};
 
     //// Define a quad
     //BaseVertex vertices[] = {
@@ -96,7 +177,7 @@ int main(int argc, char* argv[])
         const char* fontFragmentShaderSourcePath = "../Shader/shader_src/testshader.frag";
         ShaderFunctions::Compile(testMaterial.shader, fontVertexShaderSourcePath, fontFragmentShaderSourcePath);
         ShaderFunctions::Use(testMaterial.shader);
-        testMaterial.textures.push_back(font_atlas.texture);
+        testMaterial.textures.push_back(tex);
         Texture t;
         TextureFunctions::Create(t);
         TextureFunctions::GenerateTextureFromFile("uvt.png", t, true);
@@ -151,7 +232,6 @@ int main(int argc, char* argv[])
     VAOFunctions::Delete(vao);
     VBOFunctions::Delete(vbo);
     EBOFunctions::Delete(ebo);
-    FontAtlasFunctions::Delete(font_atlas);
     WindowFunctions::Delete(main_window);
 
     return 0;

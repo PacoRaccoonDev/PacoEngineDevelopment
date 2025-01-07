@@ -25,12 +25,14 @@ struct TTFFontAtlas
 public:
     int atlas_width = 512;
     int atlas_height = 512;
-    int number_of_glyphs = 96;    // Number of glyphs to include (e.g. ASCII 32-127)
+    int number_of_glyphs = 255 - 32;    // Number of glyphs to include (e.g. ASCII 32-127)
     float pixel_height = 64.0f;
 
     Texture texture;
 
     TTFFontQuad* baked_quads;
+
+    stbtt_fontinfo font_info;
 
     // Allocates memory on the heap CLEAN IT WITH DELETE
     TTFFontAtlas(float p_pixel_height, int p_atlas_width, int p_atlas_height, int p_number_of_glyphs)
@@ -70,7 +72,7 @@ namespace FontAtlasFunctions
 
     static bool LoadTTFFontAtlasFromFile(const char* p_ttf_file_path, TTFFontAtlas& p_font_atlas, GLenum p_filter_type = GL_LINEAR)
     {
-        stbtt_fontinfo p_font;
+        stbtt_fontinfo font_info;
         stbtt_bakedchar* baked_chars = new stbtt_bakedchar[p_font_atlas.number_of_glyphs];
 
         std::ifstream file(p_ttf_file_path, std::ios::binary | std::ios::ate);
@@ -89,7 +91,7 @@ namespace FontAtlasFunctions
             return false;
         }
 
-        if (!stbtt_InitFont(&p_font, font_buffer.data(), stbtt_GetFontOffsetForIndex(font_buffer.data(), 0))) {
+        if (!stbtt_InitFont(&font_info, font_buffer.data(), stbtt_GetFontOffsetForIndex(font_buffer.data(), 0))) {
             std::cerr << "Failed to initialize font.\n";
             return false;
         }
